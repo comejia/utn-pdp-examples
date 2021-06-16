@@ -25,6 +25,9 @@ chocolateComun = Chocolate "Aburrido" [cacao, naranja] 10 30 20
 
 cajaDeChocolates = [chocolateComun, chocolateAsesino, chocolateAmargo, chocolateAsesino, chocolateAmargoYAptoDiabetico, chocolateComun, chocolateConPocosIngredientes]
 
+chocolateVacio = Chocolate "Me estas jodiendo" [] 0 0 0
+
+
 correrTests :: IO ()
 correrTests = hspec $ do
 -- Tests Punto 1
