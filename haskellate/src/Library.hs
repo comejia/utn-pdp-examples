@@ -1,23 +1,19 @@
 module Library where
 import PdePreludat
 
-doble :: Number -> Number
-doble numero = numero + numero
-
 
 -- Punto 1
-
-type Ingrediente = String
+--type Ingrediente = String
 type Gramos = Number
 type Porcentaje = Number
 
 data Chocolate = Chocolate {
-    nombre :: String,
+    nombreFancy :: String,
     ingredientes :: [Ingrediente],
     peso :: Gramos,
     porcentajeDeCacao :: Porcentaje,
     porcentajeDeAzucar :: Porcentaje
-}
+} deriving (Show, Eq)
 
 type Precio = Number
 
@@ -41,3 +37,20 @@ precioDeChocolate chocolate
     | cantidadDeIngredientes chocolate > 4                  = 8 * cantidadDeIngredientes chocolate
     | otherwise                                             = 1.5 * peso chocolate
 
+
+-- Punto 2
+data Ingrediente = Ingrediente {
+    nombre :: String,
+    calorias :: Number
+} deriving (Show, Eq)
+
+esBombonAsesino :: Chocolate -> Bool
+esBombonAsesino = any ((> 200) . calorias) . ingredientes
+
+type Calorias = Number
+totalCalorias :: Chocolate -> Calorias
+totalCalorias = foldr ((+) . calorias) 0 . ingredientes
+
+type CajaChocolate = [Chocolate]
+aptoParaNinios :: CajaChocolate -> CajaChocolate
+aptoParaNinios = take 3 . filter (not . esBombonAsesino)
