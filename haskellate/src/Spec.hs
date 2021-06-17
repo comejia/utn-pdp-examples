@@ -7,7 +7,7 @@ import Test.Hspec
 
 -- Ingredientes
 cacao = Ingrediente "cacao" 10
-naranja = Ingrediente "naranja" 20
+naranja = Ingrediente "Naranja" 20
 limon = Ingrediente "limon" 30
 pera = Ingrediente "pera" 40
 uva = Ingrediente "uva" 50
@@ -19,7 +19,7 @@ chocolateAmargoYAptoDiabetico = Chocolate "Muy amargo" [] 10 70 0
 chocolateConMuchosIngredientes = Chocolate "El mejor" [cacao, naranja, limon, pera, uva] 10 30 20
 chocolateConPocosIngredientes = Chocolate "Simple" [cacao, naranja] 10 30 20
 
-chocolateAsesino = Chocolate "Killer" [cacao, mani, uva] 10 30 20
+chocolateAsesino = Chocolate "Killer" [cacao, mani, uva, naranja] 10 30 20
 chocolateNoAsesino = Chocolate "Aburrido" [uva, pera, limon] 10 30 20
 chocolateComun = Chocolate "Aburrido" [cacao, naranja] 10 30 20
 
@@ -27,6 +27,8 @@ cajaDeChocolates = [chocolateComun, chocolateAsesino, chocolateAmargo, chocolate
 
 chocolateVacio = Chocolate "Me estas jodiendo" [] 0 0 0
 
+
+--juan = Persona 800 0 sinNaranja
 
 correrTests :: IO ()
 correrTests = hspec $ do

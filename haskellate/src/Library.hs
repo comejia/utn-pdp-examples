@@ -62,8 +62,8 @@ agregarIngrediente ingrediente chocolate = chocolate {
 }
 
 agregarNivelDeAzucar :: PorcentajeDeAzucar -> Chocolate -> Chocolate
-agregarNivelDeAzucar azucar chocolate = chocolate {
-    porcentajeDeAzucar = porcentajeDeAzucar chocolate + azucar
+agregarNivelDeAzucar porcentajeDeAzucarAAgregar chocolate = chocolate {
+    porcentajeDeAzucar = porcentajeDeAzucar chocolate + porcentajeDeAzucarAAgregar
 }
 
 type Proceso = Chocolate -> Chocolate
@@ -71,8 +71,9 @@ type Proceso = Chocolate -> Chocolate
 type Unidades = Number
 type Fruta = String
 frutalizado :: Fruta -> Unidades -> Proceso
-frutalizado _ 0 chocolate = chocolate
-frutalizado fruta unidades chocolate = (frutalizado fruta (unidades - 1) . agregarIngrediente (Ingrediente fruta 2)) chocolate
+--frutalizado _ 0 chocolate = chocolate
+--frutalizado fruta unidades chocolate = (frutalizado fruta (unidades - 1) . agregarIngrediente (Ingrediente fruta 2)) chocolate
+frutalizado fruta unidades = agregarIngrediente (Ingrediente fruta (unidades * 2))
 
 dulceDeLeche :: Proceso
 dulceDeLeche chocolate = agregarIngrediente (Ingrediente "Dulce de leche" 220) chocolate {
@@ -85,17 +86,52 @@ celiaCrucera = agregarNivelDeAzucar
 
 type GradoDeAlcohol = Number
 embriagadora :: GradoDeAlcohol -> Proceso
-embriagadora alcohol chocolate
-    | alcohol >= 30                                 = (agregarIngrediente (Ingrediente "Licor" 30) . agregarNivelDeAzucar 20) chocolate
-    | otherwise                                     = (agregarIngrediente (Ingrediente "Licor" alcohol) . agregarNivelDeAzucar 20) chocolate
+embriagadora gradosDeAlcohol chocolate -- = (agregarIngrediente (Ingrediente "Licor" (min 30 gradosDeAlcohol)) . agregarNivelDeAzucar 20) chocolate
+    | gradosDeAlcohol >= 30                                 = (agregarIngrediente (Ingrediente "Licor" 30) . agregarNivelDeAzucar 20) chocolate
+    | otherwise                                             = (agregarIngrediente (Ingrediente "Licor" gradosDeAlcohol) . agregarNivelDeAzucar 20) chocolate
 
 
 -- Punto 4
-receta :: [Proceso]
---receta = frutalizado "Naranja" 10 . dulceDeLeche . embriagadora 32
+type Receta = [Proceso]
+receta :: Receta
 receta = [frutalizado "Naranja" 10, dulceDeLeche, embriagadora 32]
 
 
 -- Punto 5
-prepararChocolate :: Chocolate -> [Proceso] -> Chocolate
+prepararChocolate :: Chocolate -> Receta -> Chocolate
 prepararChocolate chocolate procesos = foldr ($) chocolate procesos
+
+
+-- Punto 6
+type CriterioDeAceptacion = Ingrediente -> Bool
+
+data Persona = Persona {
+    nivelDeSaturacion :: Calorias,
+    criterio :: CriterioDeAceptacion
+}
+
+noCumpleCriterio :: Chocolate -> Persona -> Bool
+noCumpleCriterio chocolate persona = any (not . criterio persona) (ingredientes chocolate)
+
+
+comerChocolate :: Persona -> Chocolate -> Persona
+comerChocolate persona chocolate= persona {
+    nivelDeSaturacion = nivelDeSaturacion persona - totalCalorias chocolate
+}
+
+hastaAcaLlegue :: Persona -> CajaChocolate -> CajaChocolate
+hastaAcaLlegue _ [] = []
+hastaAcaLlegue persona (primerChocolate:restoDeChocolates)
+    | noCumpleCriterio primerChocolate persona                      = hastaAcaLlegue persona restoDeChocolates
+    | ((<= 0) . nivelDeSaturacion) persona                          = []
+    | otherwise                                                     = primerChocolate:hastaAcaLlegue (comerChocolate persona primerChocolate) restoDeChocolates
+
+
+-- Punto 7
+totalCalorias' :: CajaChocolate -> Calorias
+totalCalorias' = foldr ((+) . totalCalorias) 0
+
+chocoArroz :: Chocolate
+chocoArroz = Chocolate "chocoArroz" [Ingrediente "arroz" 1, Ingrediente "potasio" 10] 1 300 10
+
+cajaInfinita = chocoArroz:cajaInfinita
