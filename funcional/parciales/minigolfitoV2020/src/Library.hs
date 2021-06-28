@@ -49,7 +49,7 @@ hierro :: Number -> PaloDeGolf
 hierro n habilidad = Tiro (fuerzaJugador habilidad * n) (precisionJugador habilidad / n) (max 0 (n - 3))
 
 palosDisponibles :: [PaloDeGolf]
-palosDisponibles = [putter, madera, hierro 5]
+palosDisponibles = [putter, madera] ++ map hierro [1..10]
 
 
 -- Punto 2
@@ -58,35 +58,45 @@ golpe jugador palo = (palo . habilidad) jugador
 
 
 -- Punto 3
+tiroDetenido = Tiro 0 0 0
+
+esTiroAlRas :: Tiro -> Bool
+esTiroAlRas = (== 0) . altura
+
 type Obstaculo = Tiro -> Tiro
 
 tunelConRampita :: Obstaculo
 tunelConRampita tiro
-    | precision tiro > 90 && altura tiro == 0                                       = Tiro (velocidad tiro * 2) 100 0
-    | otherwise                                                                     = Tiro 0 0 0
+    | superaTunelConRampita tiro                            = Tiro (velocidad tiro * 2) 100 0
+    | otherwise                                             = tiroDetenido
 
-largoDeLaguna :: Number
-largoDeLaguna = 2
+superaTunelConRampita :: Tiro -> Bool
+superaTunelConRampita tiro = precision tiro > 90 && esTiroAlRas tiro
 
-laguna :: Obstaculo
-laguna tiro
-    | velocidad tiro > 80 && (between 1 5 . altura) tiro                            = Tiro (velocidad tiro) (precision tiro) (altura tiro / largoDeLaguna)
-    | otherwise                                                                     = Tiro 0 0 0
+type LargoLaguna = Number
+laguna :: LargoLaguna -> Obstaculo
+laguna largoLaguna tiro
+    | superaLaguna tiro                                     = Tiro (velocidad tiro) (precision tiro) (altura tiro / largoLaguna)
+    | otherwise                                             = tiroDetenido
+
+superaLaguna :: Tiro -> Bool
+superaLaguna tiro = velocidad tiro > 80 && (between 1 5 . altura) tiro
 
 hoyo :: Obstaculo
 hoyo tiro
-    | (between 5 20 . velocidad) tiro && altura tiro == 0 && precision tiro > 95    = Tiro 100 100 100
-    | otherwise                                                                     = Tiro 0 0 0
+    | superaHoyo tiro                                       = Tiro 100 100 100 -- Se inventa para seguir con la resolucion
+    | otherwise                                             = tiroDetenido
+
+superaHoyo :: Tiro -> Bool
+superaHoyo tiro = (between 5 20 . velocidad) tiro && esTiroAlRas tiro && precision tiro > 95
+
 
 superaObstaculo :: Obstaculo -> Tiro -> Bool
-superaObstaculo obstaculo tiro = ((/= (Tiro 0 0 0)) . obstaculo) tiro
+superaObstaculo obstaculo tiro = ((/= (Tiro 0 0 0)) . obstaculo) tiro -- Se hardcodea Tiro 0 0 0
 
 
 -- Punto 4
 type ListaObstaculos = [Obstaculo]
-
--- Test Data
-listaObstaculos = [tunelConRampita, tunelConRampita, hoyo]
 
 palosUtiles :: Jugador -> Obstaculo -> [PaloDeGolf]
 palosUtiles jugador obstaculo = filter (superaObstaculo obstaculo . golpe jugador) palosDisponibles
@@ -97,12 +107,12 @@ cantidadDeObstaculosConsecutivos obstaculos tiro = (length . takeWhile (flip(sup
 paloMasUtil :: Jugador -> ListaObstaculos -> PaloDeGolf
 paloMasUtil jugador obstaculos = maximoSegun(cantidadDeObstaculosConsecutivos obstaculos . golpe jugador) palosDisponibles
 
+-- Test Data
+listaObstaculos = [tunelConRampita, tunelConRampita, hoyo]
+
 
 -- Punto 5
 type TablaDePuntos = [(Jugador, Puntos)]
-
--- Test Data
-tablaDePuntos = [(bart, 10), (todd, 5), (rafa, 50)]
 
 jugador :: (Jugador, Puntos) -> Jugador
 jugador (_jugador, _) = _jugador
@@ -117,3 +127,6 @@ padresQuePerdieron tabla = map (padre . jugador) $ filter (/= ganador tabla) tab
 
 ganador :: TablaDePuntos -> (Jugador, Puntos)
 ganador tabla = maximoSegun puntos tabla
+
+-- Test Data
+tablaDePuntos = [(bart, 10), (todd, 5), (rafa, 50)]
