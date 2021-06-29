@@ -91,12 +91,13 @@ loca gema = gema . gema
 
 -- Punto 4
 guanteleteDeGoma :: Guantelete
-guanteleteDeGoma = Guantelete {material = "goma", gemas = [tiempo, alma "usar Mjolnit", loca poder]}
+guanteleteDeGoma = Guantelete {material = "goma", gemas = [tiempo, alma "usar Mjolnit", loca (alma "programacion en Haskell")]}
 
 
 -- Punto 5
 utilizar :: [Gema] -> Personaje -> Personaje
 utilizar gemas enemigo = foldr ($) enemigo gemas
+-- efecto de lado: no hay!! el personaje al ser afectado por la gema, devuelve otro personaje con ciertas propierdades diferentes
 
 
 -- Punto 6
