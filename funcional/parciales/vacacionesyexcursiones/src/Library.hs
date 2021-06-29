@@ -75,12 +75,14 @@ completo :: Tour
 completo = [caminar 20, apreciarElementoDePaisaje "cascada", caminar 40, irALaPlaya, salirAHablarUnIdioma "melmacquiano"]
 
 ladoB :: Excursion -> Tour
-ladoB excursion = [paseoEnBarco Tranquila, excursion, caminar (2*60)]
+ladoB excursion = [paseoEnBarco Tranquila, excursion, caminar 120]
 
 islaVecina :: Marea -> Tour
-islaVecina marea
-    | marea /= Fuerte           = [paseoEnBarco marea, irALaPlaya, paseoEnBarco marea]
-    | otherwise                 = [paseoEnBarco Fuerte, apreciarElementoDePaisaje "lago", paseoEnBarco Fuerte]
+islaVecina marea = [paseoEnBarco marea, excursionEnIslaVecina marea, paseoEnBarco marea]
+
+excursionEnIslaVecina :: Marea -> Excursion
+excursionEnIslaVecina Fuerte = apreciarElementoDePaisaje "lago"
+excursionEnIslaVecina _ = irALaPlaya
 
 -- Punto 3a
 hacerTour :: Turista -> Tour -> Turista
@@ -88,7 +90,7 @@ hacerTour turista tour = foldl (flip(realizarExcursion)) turista{ nivelDeStress 
 
 -- Punto 3b
 consiguePareja :: Turista -> Excursion -> Bool
-consiguePareja turista excursion = (not . viajaSolo . flip(realizarExcursion) turista) excursion
+consiguePareja turista = (not . viajaSolo . flip(realizarExcursion) turista)
 
 esTourConvincente :: Turista -> Tour -> Bool
 esTourConvincente turista tour = any (\excursion -> excursionDesestresante excursion turista && consiguePareja turista excursion) tour
@@ -121,10 +123,10 @@ turistas = [ana, beto]
 
 -- Punto 4a
 tourInfinito :: Tour
-tourInfinito = repeat irALaPlaya
+tourInfinito = irALaPlaya:repeat irALaPlaya
 
 -- Punto 4b
--- Si bien irALaPlaya no modifica el estado, como Ana no viaja sola entontces solo para ella es convincente. No para beto
+-- Si bien irALaPlaya no modifica el estado, como Ana no viaja sola entontces solo para ella es convincente. No asi para beto, el algoritmo diverge
 
 -- Punto 4c
--- NO
+-- NO, solo es valido para una lista vacia de turistas que siempre da 0.
