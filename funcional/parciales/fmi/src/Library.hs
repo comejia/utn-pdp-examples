@@ -37,7 +37,7 @@ quitarRecurso :: Recurso -> Pais -> Pais
 quitarRecurso recurso pais = pais { recursos = (filter (/= recurso) . recursos) pais }
 
 productoBrutoInterno :: Pais -> Number
-productoBrutoInterno pais = ipc pais * poblacionActiva pais + poblacionActiva pais
+productoBrutoInterno pais = ipc pais * poblacionActiva pais
 
 type Estrategia = Pais -> Pais
 
@@ -61,15 +61,14 @@ receta :: Receta
 receta = [prestarMillonesDeDolares 200000000, darAlgunRecursoNatural "Mineria"]
 
 -- Punto 3b
-aplicarReceta :: Receta -> Pais -> Pais
-aplicarReceta receta pais = foldr ($) pais receta
-
--- No hay efecto colateral! el objeto que se obtiene al aplicar la receta es distinto al original
+aplicarReceta :: Pais -> Receta -> Pais
+aplicarReceta = foldr ($)
+-- No hay efecto colateral! el objeto/pais que se obtiene al aplicar la receta es distinto al original
 
 
 -- Punto 4a
 paisesQuePuedenZafar :: [Pais] -> [Pais]
-paisesQuePuedenZafar paises = filter (any (== "Petroleo") . recursos ) paises
+paisesQuePuedenZafar paises = filter (any (== "Petroleo") . recursos) paises
 
 -- Punto 4b
 deudaTotalAFavorDelFMI :: [Pais] -> Number
@@ -82,3 +81,22 @@ deudaTotalAFavorDelFMI' = sum . map (deuda)
 
 
 -- Punto 5
+listaDeRecetaOrdenada :: Pais -> [Receta] -> Bool
+listaDeRecetaOrdenada _ [unaReceta] = True
+listaDeRecetaOrdenada pais (receta1:receta2:recetas)
+    | (productoBrutoInterno . aplicarReceta pais) receta1 < (productoBrutoInterno . aplicarReceta pais) receta2         = listaDeRecetaOrdenada pais (receta1:recetas)
+    | otherwise                                                                                                         = False
+
+
+-- Punto 6
+recursosNaturalesInfinitos :: [Recurso]
+recursosNaturalesInfinitos = "Energia" : recursosNaturalesInfinitos
+
+paisConRecursosInfinitos :: Pais
+paisConRecursosInfinitos = Pais 4140 400000 650000 recursosNaturalesInfinitos 50000000
+
+-- Punto 6a
+-- El algoritmo diverge ya que nunca termina de evaluar la lista de recursos
+-- Punto 6b
+-- En este caso no hay problemas ya que se evalua la deuda de un pais
+
