@@ -35,7 +35,7 @@ viajeMayorA200 = (> 200) . costo
 
 type Letras = Number
 nombreClienteMayorQue :: Letras -> Condicion
-nombreClienteMayorQue n = (>n) . length . nombreCliente . cliente
+nombreClienteMayorQue n = (>= n) . length . nombreCliente . cliente
 
 type Domicilio = String
 clienteNoVivaEn :: Domicilio -> Condicion
@@ -88,3 +88,16 @@ realizarViaje viaje = incorporarViaje viaje . choferConMenosViajes viaje . chofe
 
 
 -- Punto 7
+repetirViaje :: Viaje -> [Viaje]
+repetirViaje viaje = viaje : repetirViaje viaje
+-- Punto 7a
+nito :: Chofer
+nito = Chofer "Nito infy" 70000 (repetirViaje Viaje{cliente = lucas, fecha = (11,03,2017), costo = 50}) (nombreClienteMayorQue 3)
+-- Punto 7b
+-- No se puede calcular la liquidacion por que diverge, nunca deja de sumar los costos
+-- Punto 7c
+-- Si puede tomar solo se evalua la condicion del chofer. Esta relaciona con evaluacion diferida, se evalua lo que se necesita
+
+-- Punto 8
+gongNeng :: Ord c => c -> (c -> Bool) -> (a -> c) -> [a] -> c
+gongNeng arg1 arg2 arg3 = max arg1 . head . filter arg2 . map arg3
