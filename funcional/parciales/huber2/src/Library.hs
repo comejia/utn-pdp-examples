@@ -53,3 +53,13 @@ alejandra :: Chofer
 alejandra = Chofer "Alejandra" 180000 [] cualquerViaje
 
 
+-- Punto 4
+puedeTomarViaje :: Chofer -> Viaje -> Bool
+puedeTomarViaje chofer viaje = (condicion chofer) viaje
+
+
+-- Punto 5
+type Liquidacion = Number
+liquidacionDeChofer :: Chofer -> Liquidacion
+liquidacionDeChofer = foldr ((+) . costo) 0 . viajesQueTomo
+
