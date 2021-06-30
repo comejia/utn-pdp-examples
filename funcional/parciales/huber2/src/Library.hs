@@ -6,14 +6,14 @@ import PdePreludat
 data Cliente = Cliente {
     nombreCliente :: String,
     direccion :: String
-}
+} deriving (Show, Eq)
 
 data Chofer = Chofer {
     nombreChofer :: String,
     kmAuto :: Number,
     viajesQueTomo :: [Viaje],
     condicion :: Condicion
-}
+} deriving (Show, Eq)
 
 type Dia = Number
 type Mes = Number
@@ -22,7 +22,7 @@ data Viaje = Viaje {
     fecha :: (Dia, Mes, Anio),
     cliente :: Cliente,
     costo :: Number
-}
+} deriving (Show, Eq)
 
 -- Punto 2
 type Condicion = Viaje -> Bool
@@ -63,3 +63,28 @@ type Liquidacion = Number
 liquidacionDeChofer :: Chofer -> Liquidacion
 liquidacionDeChofer = foldr ((+) . costo) 0 . viajesQueTomo
 
+
+-- Punto 6
+cantidadDeViajes :: Chofer -> Number
+cantidadDeViajes = length . viajesQueTomo
+
+menosViajesQue :: Chofer -> Chofer -> Chofer
+menosViajesQue chofer1 chofer2
+    | cantidadDeViajes chofer1 <= cantidadDeViajes chofer1      = chofer1
+    | otherwise                                                 = chofer2
+
+incorporarViaje :: Viaje -> Chofer -> Chofer
+incorporarViaje viaje chofer = chofer {viajesQueTomo = viajesQueTomo chofer ++ [viaje]}
+
+-- Punto 6a
+choferesQueTomanViaje :: Viaje -> [Chofer] -> [Chofer]
+choferesQueTomanViaje viaje choferes = filter (flip(puedeTomarViaje) viaje) choferes
+-- Punto 6b
+choferConMenosViajes :: Viaje -> [Chofer] -> Chofer
+choferConMenosViajes viaje = foldl1 (menosViajesQue)
+-- Punto 6c
+realizarViaje :: Viaje -> [Chofer] -> Chofer
+realizarViaje viaje = incorporarViaje viaje . choferConMenosViajes viaje . choferesQueTomanViaje viaje
+
+
+-- Punto 7
