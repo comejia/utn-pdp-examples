@@ -17,8 +17,9 @@ data Chofer = Chofer {
 
 type Dia = Number
 type Mes = Number
+type Anio = Number
 data Viaje = Viaje {
-    fecha :: (Dia, Mes),
+    fecha :: (Dia, Mes, Anio),
     cliente :: Cliente,
     costo :: Number
 }
@@ -39,5 +40,16 @@ nombreClienteMayorQue n = (>n) . length . nombreCliente . cliente
 type Domicilio = String
 clienteNoVivaEn :: Domicilio -> Condicion
 clienteNoVivaEn domicilio = (/= domicilio) . direccion . cliente
+
+
+-- Punto 3a
+lucas :: Cliente
+lucas = Cliente "Lucas" "Victoria"
+-- Punto 3b
+daniel :: Chofer
+daniel = Chofer "Daniel" 23500 [Viaje{cliente = lucas, fecha = (20,04,2017), costo = 150}] (clienteNoVivaEn "Olivos")
+-- Punto 3c
+alejandra :: Chofer
+alejandra = Chofer "Alejandra" 180000 [] cualquerViaje
 
 
