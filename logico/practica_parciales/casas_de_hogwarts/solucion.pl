@@ -88,21 +88,39 @@ cadenaDeCasas([Mago1, Mago2 | MagosSiguientes]):-
 
 
 % Parte 2: La copa de las casa
-% accion(Mago, AccionRealizada, Puntaje)
-accion(harry, estarFueraDeLaCama, (-50)).
-accion(harry, irBosque, (-50)).
-accion(harry, irTercerPiso, (-75)).
-accion(harry, vencerAVolvermort, 60).
-accion(hermione, irTercerPiso, (-75)).
-accion(hermione, irSeccionRestringida, (-10)).
-accion(hermione, usarIntelecto, 50).
-accion(ron, ganarPartida, 50).
-accion(draco, irAMazmorras, 0).
 
-malaAccion(estarFueraDeLaCama).
-malaAccion(irBosque).
-malaAccion(irSeccionRestringida).
-malaAccion(irTercerPiso).
+% hizo(Mago, Accion)
+hizo(harry, estarFueraDeLaCama).
+hizo(harry, irBosque).
+hizo(harry, irTercerPiso).
+hizo(harry, vencerAVolvermort).
+hizo(hermione, irTercerPiso).
+hizo(hermione, irSeccionRestringida).
+hizo(hermione, usarIntelecto).
+hizo(ron, ganarPartida).
+hizo(draco, irAMazmorras).
+hizo(luna, usarIntelecto).
+hizo(hermione, responderPregunta).
+
+% puntajeQueGenera(Mago, Puntaje)
+puntajeQueGenera(estarFueraDeLaCama, -50).
+puntajeQueGenera(irBosque, -50).
+puntajeQueGenera(irTercerPiso, -75).
+puntajeQueGenera(vencerAVolvermort, 60).
+puntajeQueGenera(irSeccionRestringida, -10).
+puntajeQueGenera(usarIntelecto, 50).
+puntajeQueGenera(ganarPartida, 50).
+puntajeQueGenera(irAMazmorras, 0).
+puntajeQueGenera(responderPregunta, Puntaje):-pregunta(_, Puntaje, Profesor), Profesor \= snape.
+puntajeQueGenera(responderPregunta, Puntaje):-pregunta(_, Puntos, snape), Puntaje is Puntos // 2.
+
+hizoAlgunaAccion(Mago):-
+  hizo(Mago, _).
+
+hizoMalaAccion(Mago):-
+  hizo(Mago, Accion),
+  puntajeQueGenera(Accion, Puntaje),
+  Puntaje < 0.
 
 esDe(hermione, gryffindor).
 esDe(ron, gryffindor).
@@ -110,43 +128,36 @@ esDe(harry, gryffindor).
 esDe(draco, slytherin).
 esDe(luna, ravenclaw).
 
+% Punto 1a
 esBuenAlumno(Mago):-
-  mago(Mago),
-  not((accion(Mago, Accion, _), malaAccion(Accion))).
+  hizoAlgunaAccion(Mago), 
+  not(hizoMalaAccion(Mago)).
 
+% Punto 1b
 accionRecurrente(Accion):-
-  accion(Mago, Accion, _),
-  accion(OtroMago, Accion, _),
+  hizo(Mago, Accion),
+  hizo(OtroMago, Accion),
   Mago \= OtroMago.
 
+% Punto 2
 puntajeTotal(Casa, Total):-
-  casa(Casa),
-  findall(Punto, (esDe(Mago, Casa), accion(Mago, _, Punto)), Puntos),
+  esDe(_, Casa),
+  findall(Punto, (esDe(Mago, Casa), hizo(Mago, Accion), puntajeQueGenera(Accion, Punto)), Puntos),
   sum_list(Puntos, Total).
 
+% Punto 3
+casaGanadora(Casa):-
+  puntajeTotal(Casa, PuntajeMayor),
+  forall((puntajeTotal(OtraCasa, PuntajeMenor), Casa \= OtraCasa), PuntajeMayor > PuntajeMenor).
+casaGanadora2(Casa):-
+  puntajeTotal(Casa, PuntajeMayor),
+  not((puntajeTotal(_, OtroPuntaje), OtroPuntaje > PuntajeMayor)).
 
-casaGanadora(Ganador):-
-  findall(Casa, casa(Casa), Casas),
-  vence(Casas, Ganador).
+% Punto 4
+pregunta(dondeEstaBezoar, 20, snape).
+pregunta(comoLevitarPluma, 25, flitwick).
 
-vence([Casa, OtraCasa], Cual):-
-  vencedor(Casa, OtraCasa, Cual).
-vence([Casa, OtraCasa|Casas], Cual):-
-  vencedor(Casa, OtraCasa, Ganador),
-  vence([Ganador| Casas], Cual).
-
-vencedor(Casa, OtraCasa, Ganador):-
-  puntajeTotal(Casa, Total1),
-  puntajeTotal(OtraCasa, Total2),
-  Mayor is max(Total1, Total2),
-  puntajeTotal(Ganador, Mayor).
-
-
-respondio(hermione, dondeEstaBezoar, 20, snape).
-respondio(hermione, comoLevitarPluma, 25, flitwick).
-
-sumarPuntos(Mago, Puntaje):-respondio(Mago, _, Puntaje, Profesor), Profesor \= snape.
-sumarPuntos(Mago, Puntaje):-respondio(Mago, _, Puntos, Profesor), Profesor = snape, Puntaje is Puntos * 0.5.
+% NOTA: una alternativa interesante es plantear las acciones como functores
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Consultas a resolver
