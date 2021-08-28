@@ -12,17 +12,30 @@ casa(ravenclaw).
 casa(hufflepuff).
 
 % mago(Mago, TipoDeSangre, Caracteristica).
-mago(harry, mestiza, coraje).
-mago(harry, mestiza, amistad).
-mago(harry, mestiza, orgullo).
-mago(draco, pura, inteligencia).
-mago(draco, pura, orgullo).
-mago(hermione, impura, inteligencia).
-mago(hermione, impura, orgullo).
-mago(hermione, impura, responsabilidad).
+sangre(harry, mestiza).
+sangre(draco, pura).
+sangre(hermione, impura).
+sangre(ron, pura).
+sangre(luna, pura).
 
-mago(ron, pura, amistad).
-mago(luna, pura, colgada).
+mago(Mago):-sangre(Mago, _).
+
+% tieneCaracteristica(Mago, Caracteristica)
+tieneCaracteristica(harry, coraje).
+tieneCaracteristica(harry, amistad).
+tieneCaracteristica(harry, orgullo).
+tieneCaracteristica(harry, inteligencia).
+tieneCaracteristica(draco, inteligencia).
+tieneCaracteristica(draco, orgullo).
+tieneCaracteristica(hermione, inteligencia).
+tieneCaracteristica(hermione, orgullo).
+tieneCaracteristica(hermione, responsabilidad).
+tieneCaracteristica(ron, responsabilidad).
+tieneCaracteristica(ron, coraje).
+tieneCaracteristica(ron, amistad).
+tieneCaracteristica(luna, amistad).
+tieneCaracteristica(luna, inteligencia).
+tieneCaracteristica(luna, responsabilidad).
 
 % odia(Mago, CasaQueOdia).
 odia(harry, slytherin).
@@ -39,28 +52,39 @@ consideracionDeSombrero(hufflepuff, amistad).
 % Punto 1
 permiteEntrar(Casa, Mago):-
   casa(Casa),
-  distinct(Mago, mago(Mago, Sangre, _)),
-  not((Casa = slytherin, Sangre = impura)).
+  mago(Mago),
+  Casa \= slytherin.
+permiteEntrar(slytherin, Mago):-
+  sangre(Mago, TipoDeSangre),
+  TipoDeSangre \= impura.
 
 % Punto 2
-tieneCaracterApropiado(Casa, Mago):-
+tieneCaracterApropiado(Mago, Casa):-
   casa(Casa),
-  distinct(Mago, mago(Mago, _, _)),
-  forall(consideracionDeSombrero(Casa, Caracteristica), mago(Mago, _, Caracteristica)).
+  mago(Mago),
+  forall(consideracionDeSombrero(Casa, Caracteristica), tieneCaracteristica(Mago, Caracteristica)).
 
 % Punto 3
-enQueCasaPuedeQuedar(Casa, Mago):-
-  tieneCaracterApropiado(Casa, Mago),
+enQueCasaPuedeQuedar(Mago, Casa):-
+  tieneCaracterApropiado(Mago, Casa),
   permiteEntrar(Casa, Mago),
   not(odia(Mago, Casa)).
+enQueCasaPuedeQuedar(hermione, gryffindor).
 
 % Punto 4
-cadenaDeAmistades([Mago]):-mago(Mago, _, amistad).
-cadenaDeAmistades([Mago|Magos]):-
-  casa(Casa),
-  mago(Mago, _, amistad),
-  enQueCasaPuedeQuedar(Casa, Mago),
-  cadenaDeAmistades(Magos).
+cadenaDeAmistades(Magos):-
+  todosAmistosos(Magos),
+  cadenaDeCasas(Magos).
+
+todosAmistosos(Magos):-
+  forall(member(Mago, Magos), tieneCaracteristica(Mago, amistad)).
+
+cadenaDeCasas([_]).
+cadenaDeCasas([Mago1, Mago2 | MagosSiguientes]):-
+  enQueCasaPuedeQuedar(Mago1, Casa),
+  enQueCasaPuedeQuedar(Mago2, Casa),
+  Mago1 \= Mago2,
+  cadenaDeCasas([Mago2 | MagosSiguientes]).
 
 
 % Parte 2: La copa de las casa
@@ -87,7 +111,7 @@ esDe(draco, slytherin).
 esDe(luna, ravenclaw).
 
 esBuenAlumno(Mago):-
-  distinct(Mago, mago(Mago, _, _)),
+  mago(Mago),
   not((accion(Mago, Accion, _), malaAccion(Accion))).
 
 accionRecurrente(Accion):-
