@@ -5,39 +5,42 @@
 
 % Parte a)
 
-% sabeCantar(Cantante, Cancion)
+% canta(Cantante, Cancion)
 % Cancion:
-%   cancion(Tema, Duracion)
-sabeCantar(megurineLuka, cancion(nightFever, 4)).
-sabeCantar(megurineLuka, cancion(foreverYoung, 5)).
-sabeCantar(hatsuneMiku, cancion(tellYourWorld, 4)).
-sabeCantar(gumi, cancion(foreverYoung, 4)).
-sabeCantar(gumi, cancion(tellYourWorld, 5)).
-sabeCantar(seeU, cancion(novemberRain, 6)).
-sabeCantar(seeU, cancion(nightFever, 5)).
+%   cancion(Nombre, Duracion)
+canta(megurineLuka, cancion(nightFever, 4)).
+canta(megurineLuka, cancion(foreverYoung, 5)).
+canta(hatsuneMiku, cancion(tellYourWorld, 4)).
+canta(gumi, cancion(foreverYoung, 4)).
+canta(gumi, cancion(tellYourWorld, 5)).
+canta(seeU, cancion(novemberRain, 6)).
+canta(seeU, cancion(nightFever, 5)).
 
-vocaloid(Cantante):-sabeCantar(Cantante, _).
+vocaloid(Cantante):-canta(Cantante, _).
 
 % Punto 1
 esNovedoso(Cantante):-
   sabeUnParDeTemas(Cantante),
-  duracionTotalDeTemas(Cantante, Total),
+  duracionTotalDeCanciones(Cantante, Total),
   Total < 15.
 
 sabeUnParDeTemas(Cantante):-
-  sabeCantar(Cantante, cancion(Tema1, _)),
-  sabeCantar(Cantante, cancion(Tema2, _)),
-  Tema1 \= Tema2.
+  canta(Cantante, UnaCancion),
+  canta(Cantante, OtraCancion),
+  UnaCancion \= OtraCancion.
 
-duracionTotalDeTemas(Cantante, Total):-
-  findall(Duracion, sabeCantar(Cantante, cancion(_, Duracion)), ListaDuracion),
-  sum_list(ListaDuracion, Total).
+duracionTotalDeCanciones(Cantante, Total):-
+  findall(Duracion, duracionDeCancion(Cantante, Duracion), Duraciones),
+  sum_list(Duraciones, Total).
+
+duracionDeCancion(Cantante, Duracion):-
+  canta(Cantante, cancion(_, Duracion)).
 
 % Punto 2
 esAcelerado(Cantante):-
   vocaloid(Cantante),
-  not((sabeCantar(Cantante, cancion(_, Duracion)), Duracion > 4)).
-
+  not((duracionDeCancion(Cantante, Duracion), Duracion > 4)).
+  %forall(duracionDeCancion(Cantante, Duracion), Duracion =< 4).
 
 % Parte b)
 
@@ -45,7 +48,7 @@ esAcelerado(Cantante):-
 % concierto(Nombre, Pais, CantidadDeFama, TipoDeConcierto)
 % TipoDeConcierto
 %   gigante(CantidadMinimaDeCanciones, DuracionTotalMinima)
-%   mediano(DuracionTotalMinima)
+%   mediano(DuracionTotalMaxima)
 %   pequenio(DuracionMinimaDeCancion)
 concierto(mikuExpo, eeuu, 2000, gigante(2, 6)).
 concierto(magicalMirai, japon, 3000, gigante(3, 10)).
@@ -55,54 +58,67 @@ concierto(mikuFest, argentina, 100, pequenio(4)).
 % Punto 2
 puedeParticipar(Cantante, Concierto):-
   vocaloid(Cantante),
+  Cantante \= hatsuneMiku,
   concierto(Concierto, _, _, Requisito),
-  cumpleRequisito(Cantante, Requisito).
+  cumpleRequisitos(Cantante, Requisito).
 puedeParticipar(hatsuneMiku, Concierto):-
   concierto(Concierto, _, _, _).
 
-cumpleRequisito(Cantante, gigante(CantidadMinimaDeCanciones, DuracionTotalMinima)):-
-  cantidadDeTemas(Cantante, TotalCanciones), TotalCanciones > CantidadMinimaDeCanciones,
-  duracionTotalDeTemas(Cantante, DuracionTotal), DuracionTotal > DuracionTotalMinima.
-cumpleRequisito(Cantante, mediano(DuracionTotalMinima)):-
-  duracionTotalDeTemas(Cantante, DuracionTotal), DuracionTotal > DuracionTotalMinima.
-cumpleRequisito(Cantante, pequenio(DuracionMinima)):-
-  sabeCantar(Cantante, cancion(_, Duracion)), Duracion > DuracionMinima.
+cumpleRequisitos(Cantante, gigante(CantidadMinimaDeCanciones, DuracionTotalMinima)):-
+  cantidadDeCanciones(Cantante, TotalCanciones), TotalCanciones > CantidadMinimaDeCanciones,
+  duracionTotalDeCanciones(Cantante, DuracionTotal), DuracionTotal > DuracionTotalMinima.
+cumpleRequisitos(Cantante, mediano(DuracionTotalMaxima)):-
+  duracionTotalDeCanciones(Cantante, DuracionTotal), DuracionTotal < DuracionTotalMaxima.
+cumpleRequisitos(Cantante, pequenio(DuracionMinimaDeCancion)):-
+  duracionDeCancion(Cantante, Duracion), Duracion > DuracionMinimaDeCancion.
 
-cantidadDeTemas(Cantante, Total):-
-  findall(Cancion, sabeCantar(Cantante, Cancion), ListaCanciones),
-  length(ListaCanciones, Total).
+cantidadDeCanciones(Cantante, Cantidad):-
+  findall(Cancion, canta(Cantante, Cancion), Canciones),
+  length(Canciones, Cantidad).
 
 % Punto 3
-vocaloidMasFamoso(Cantante):-
-  vocaloid(Cantante),
-  famaTotalPorParticipar(Cantante, Total1),
-  not((famaTotalPorParticipar(_, Total2), Total1 < Total2)).
+masFamoso(Cantante):-
+  nivelDeFamoso(Cantante, NivelMasFamoso),
+  not((nivelDeFamoso(_, OtroNivel), NivelMasFamoso < OtroNivel)).
+  %forall(nivelFamoso(_, OtroNivel), NivelMasFamoso >= OtroNivel).
 
-famaTotalPorParticipar(Cantante, FamaTotal):-
+nivelDeFamoso(Cantante, Nivel):-
+  famaTotalObtenida(Cantante, FamaTotal),
+  cantidadDeCanciones(Cantante, TotalCanciones),
+  Nivel is FamaTotal * TotalCanciones.
+
+famaTotalObtenida(Cantante, FamaTotal):-
   vocaloid(Cantante),
-  findall(Fama, (puedeParticipar(Cantante, Concierto), concierto(Concierto, _, Fama, _)), ListaFama),
-  sum_list(ListaFama, FamaObtenida),
-  cantidadDeTemas(Cantante, TotalCanciones),
-  FamaTotal is FamaObtenida * TotalCanciones.
+  findall(Fama, famaDeConcierto(Cantante, Fama), ListaDeFama),
+  sum_list(ListaDeFama, FamaTotal).
+
+famaDeConcierto(Cantante, Fama):-
+  puedeParticipar(Cantante, Concierto), concierto(Concierto, _, Fama, _).
 
 % Punto 4
-conoceA(megurineLuka, hatsuneMiku).
-conoceA(megurineLuka, gumi).
-conoceA(gumi, seeU).
-conoceA(seeU, kaito).
+conoce(megurineLuka, hatsuneMiku).
+conoce(megurineLuka, gumi).
+conoce(gumi, seeU).
+conoce(seeU, kaito).
 
-unicoQueParticipaDeConcierto(Cantante, Concierto):-
-  not(puedeParticipar(Cantante, Concierto)).
 unicoQueParticipaDeConcierto(Cantante, Concierto):-
   puedeParticipar(Cantante, Concierto),
-  conoceA(Cantante, Conocido),
-  not(puedeParticipar(Conocido, Concierto)),
-  unicoQueParticipaDeConcierto(Conocido, Concierto).
+  not((conocido(Cantante, OtroCantante),
+    puedeParticipar(OtroCantante, Concierto))).
+
+%Conocido directo
+conocido(Cantante, OtroCantante):-
+  conoce(Cantante, OtroCantante).
+%Conocido indirecto
+conocido(Cantante, OtroCantante) :- 
+  conoce(Cantante, UnCantante), 
+  conocido(UnCantante, OtroCantante).
 
 % Punto 5
-% No tendria que hacer ningun cambio, solo agregar una regla mas de "cumpleRequisito"
+% No tendria que hacer ningun cambio, solo agregar una regla mas de "cumpleRequisito/2"
 % para validar si el cantante puede o no participar del concierto.
-% Esto fue gracias al uso de functores en el hecho "concierto"
+% El concepto que facilita los cambios para el nuevo requerimiento es el "polimorfismo", 
+% que nos permite dar un tratamiento en particular a cada uno de los tipos de conciertos.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Consultas a resolver
