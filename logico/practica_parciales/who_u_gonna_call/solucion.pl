@@ -4,7 +4,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % herramientasRequeridas(Tarea, Herramientas)
-herramientasRequeridas(ordenarCuarto, [aspiradora(100), trapeador, plumero]).
+%herramientasRequeridas(ordenarCuarto, [aspiradora(100), trapeador, plumero]).
+%% Agregado necesario Punto 6a
+herramientasRequeridas(ordenarCuarto, [[escoba, aspiradora(100)], trapeador, plumero]).
 herramientasRequeridas(limpiarTecho, [escoba, pala]).
 herramientasRequeridas(cortarPasto, [bordedadora]).
 herramientasRequeridas(limpiarBanio, [sopapa, trapeador]).
@@ -27,18 +29,24 @@ satisfaceNecesidad(Persona, aspiradora(PotenciaRequerida)):-
   tiene(Persona, aspiradora(Potencia)),
   Potencia >= PotenciaRequerida.
 
+%% Agregado necesario Punto 6b
+satisfaceNecesidad(Persona, ListaRemplazables):-
+	member(Herramienta, ListaRemplazables),
+	satisfaceNecesidad(Persona, Herramienta).
+
 % Punto 3
 puedeRealizarTarea(Tarea, Persona):-
-  tiene(Persona, varitaDeNeutrones),
-  tarea(Tarea).
+  tarea(Tarea),
+  tiene(Persona, varitaDeNeutrones).
 puedeRealizarTarea(Tarea, Persona):-
   persona(Persona),
   tarea(Tarea),
-  forall(herramientaNecesaria(Tarea, Herramienta), satisfaceNecesidad(Persona, Herramienta)).
+  forall(requiereHerramienta(Tarea, Herramienta), satisfaceNecesidad(Persona, Herramienta)).
 
 persona(Persona):-tiene(Persona, _).
 tarea(Tarea):-herramientasRequeridas(Tarea, _).
-herramientaNecesaria(Tarea, Herramienta):-
+
+requiereHerramienta(Tarea, Herramienta):-
   herramientasRequeridas(Tarea, Herramientas),
   member(Herramienta, Herramientas).
 
@@ -56,34 +64,36 @@ precio(cortarPasto, 20).
 precio(limpiarBanio, 100).
 precio(encerarPisos, 80).
 
-cuantoCobrar(Cliente, PrecioFinal):-
+precioACobrar(Cliente, PrecioFinal):-
   cliente(Cliente),
-  findall(Precio, precioDeTareaPedida(Cliente, Precio), Precios),
+  findall(Precio, precioPorTareaPedida(Cliente, _, Precio), Precios),
   sum_list(Precios, PrecioFinal).
 
-precioDeTareaPedida(Cliente, PrecioTotal):-
+precioPorTareaPedida(Cliente, Tarea, Precio):-
   tareaPedida(Cliente, Tarea, Metros), 
   precio(Tarea, PrecioPorMetro),
-  PrecioTotal is PrecioPorMetro * Metros.
+  Precio is PrecioPorMetro * Metros.
 
 cliente(Cliente):-tareaPedida(Cliente, _, _).
 
 % Punto 5
 aceptaPedido(Persona, Cliente):-
+  puedeHacerPedido(Persona, Cliente),
+  estaDispuestoAHacer(Persona, Cliente).
+
+puedeHacerPedido(Persona, Cliente):-
   persona(Persona),
-  acepta(Persona, Cliente),
+  cliente(Cliente),
   forall((tareaPedida(Cliente, Tarea, _)), puedeRealizarTarea(Tarea, Persona)).
 
-acepta(ray, Cliente):-
-  tareaPedida(Cliente, Tarea, _),
-  Tarea \= limpiarTecho.
-acepta(winston, Cliente):-
-  cuantoCobrar(Cliente, PrecioFinal),
+estaDispuestoAHacer(ray, Cliente):-
+  not(tareaPedida(Cliente, limpiarTecho, _)).
+estaDispuestoAHacer(winston, Cliente):-
+  precioACobrar(Cliente, PrecioFinal),
   PrecioFinal > 500.
-acepta(egon, Cliente):-
-  tareaPedida(Cliente, Tarea, _),
-  not(tareaCompleja(Tarea)).
-acepta(peter, Cliente):-tareaPedida(Cliente, _, _).
+estaDispuestoAHacer(egon, Cliente):-
+  not((tareaPedida(Cliente, Tarea, _), tareaCompleja(Tarea))).
+estaDispuestoAHacer(peter, _).
 
 tareaCompleja(Tarea):-
   herramientasRequeridas(Tarea, Herramientas),
@@ -92,8 +102,20 @@ tareaCompleja(Tarea):-
 tareaCompleja(limpiarTecho).
 
 % Punto 6a
-% herramientasRequeridas(ordenarCuarto, [escoba, trapeador, plumero]).
+% herramientasRequeridas(ordenarCuarto, [[escoba, aspiradora(100)], trapeador, plumero]).
 % Punto 6b
+% satisfaceNecesidad(Persona, ListaRemplazables):-
+% 	member(Herramienta, ListaRemplazables),
+% 	satisfaceNecesidad(Persona, Herramienta).
+% Punto 6c
+% Se elige la solución de agrupar en una lista las herramientas remplazables, 
+% y agregar una nueva definición a satisfaceNecesidad, que era el predicado que 
+% usabamos para tratar directamente con las herramientas. De esta forma se trata
+% polimorficamente tanto a nuestros hechos sin herramientas remplazables, como a aquellos que 
+% sí las tienen. También se podría haber planteado con un functor en vez de lista.
+% Cual es la ventaja? Cada vez que aparezca una nueva herramienta
+% remplazable, bastará sólo con agregarla a la lista de herramientas
+% remplazables, y no deberá modificarse el resto de la solución.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
