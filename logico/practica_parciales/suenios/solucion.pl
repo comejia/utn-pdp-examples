@@ -51,12 +51,16 @@ equipoChico(aldosivi).
 
 
 % Punto 3
-tieneQuimica(campanita, Persona):-
-  cree(Persona, campanita),
+tieneQuimica(Personaje, Persona):-
+  cree(Persona, Personaje),
+  esCompatible(Persona, Personaje).
+
+esCompatible(Persona, campanita):-
   dificultadDeSuenio(Persona, _, Dificultad),
   Dificultad < 5.
-tieneQuimica(Personaje, Persona):-
-  cree(Persona, Personaje), Personaje \= campanita,
+
+esCompatible(Persona, Personaje):-
+  Personaje \= campanita,
   tieneSueniosPuros(Persona),
   not(ambisioso(Persona)).
 
@@ -67,24 +71,25 @@ esPuro(cantante(Ventas)):-Ventas < 200000.
 
 
 % Punto 4
-amiga(campanita, reyesMagos).
-amiga(campanita, conejoDePascua).
-amiga(conejoDePascua, cavenaghi).
+esAmigo(campanita, reyesMagos).
+esAmigo(campanita, conejoDePascua).
+esAmigo(conejoDePascua, cavenaghi).
 
 alegra(Personaje, Persona):-
   quiere(Persona, _),
   tieneQuimica(Personaje, Persona),
+  apto(Personaje).
+
+apto(Personaje):-
   not(enfermo(Personaje)).
-alegra(Personaje, Persona):-
-  quiere(Persona, _),
-  tieneQuimica(Personaje, Persona),
+apto(Personaje):-
   amistades(Personaje, OtroPersonaje),
   not(enfermo(OtroPersonaje)).
 
 amistades(Personaje, OtroPersonaje):-
-  amiga(Personaje, OtroPersonaje).
+  esAmigo(Personaje, OtroPersonaje).
 amistades(Personaje, OtroPersonaje):-
-  amiga(Personaje, UnPersonaje),
+  esAmigo(Personaje, UnPersonaje),
   amistades(UnPersonaje, OtroPersonaje).
 
 enfermo(campanita).
