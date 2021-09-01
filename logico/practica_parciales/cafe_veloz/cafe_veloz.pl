@@ -19,9 +19,15 @@ tomo(caniggia, producto(cocacola, 2)).
 tomo(chamot, compuesto(cafeVeloz)).
 tomo(balbo, producto(gatoreit, 2)).
 
+% Punto 1a
+tomo(passarella, Cosa):-not(tomo(maradona, Cosa)).
 % Punto 1b
 tomo(pedemonti, Sustancia):-tomo(chamot, Sustancia).
 tomo(pedemonti, Sustancia):-tomo(maradona, Sustancia).
+% Punto 1c
+% Por el Principio del universo cerrado no se modela, ya que todo lo que no esta
+% en la base de conocimiento se considera falso.
+
 
 % relaciona la máxima cantidad de un producto que 1 jugador puede ingerir
 maximo(cocacola, 3).
@@ -36,17 +42,10 @@ sustanciaProhibida(efedrina).
 sustanciaProhibida(cocaina).
 
 
-% Punto 1a,c
-% No se modela ya que por el Principio del Universo Cerrado
-% todo lo que no se encuentra en la base de conocimientos se considera falso
-% Punto 1b (Se agrega mas arriba para evitar Warning de prolog)
-% tomo(pedemonti, Sustancia):-tomo(chamot, Sustancia).
-% tomo(pedemonti, Sustancia):-tomo(maradona, Sustancia).
-
 % Punto 2
 puedeSerSuspendido(Jugador):-
-  distinct(Jugador, tomo(Jugador, Algo)),
-  estaProhibido(Algo).
+  distinct(Jugador, tomo(Jugador, Cosa)),
+  estaProhibido(Cosa).
 
 estaProhibido(sustancia(Sustancia)):-
   sustanciaProhibida(Sustancia).
@@ -86,9 +85,10 @@ atiende(cureta, pedemonti).
 atiende(cureta, basualdo).
 
 chanta(Medico):-
-  atiende(Medico, _),
+  medico(Medico),
   forall(atiende(Medico, Jugador), puedeSerSuspendido(Jugador)).
 
+medico(Medico):-distinct(Medico, atiende(Medico, _)).
 
 % Punto 5
 nivelFalopez(efedrina, 10).
@@ -98,7 +98,7 @@ nivelFalopez(omeprazol, 5).
 
 cuantaFalopaTiene(Jugador, Cantidad):-
   jugador(Jugador),
-  findall(Nivel, (tomo(Jugador, Sustancia), nivelDeAlteracion(Sustancia, Nivel)), Niveles),
+  findall(Nivel, (tomo(Jugador, Cosa), nivelDeAlteracion(Cosa, Nivel)), Niveles),
   sum_list(Niveles, Cantidad).
 
 nivelDeAlteracion(producto(_, _), 0).
@@ -106,13 +106,13 @@ nivelDeAlteracion(sustancia(Sustancia), Nivel):-
   nivelFalopez(Sustancia, Nivel).
 nivelDeAlteracion(compuesto(Compuesto), Nivel):-
   composicion(Compuesto, Sustancias),
-  member(Sustancia, Sustancias),
-  nivelFalopez(Sustancia, Nivel).
+  findall(Valor, (member(Sustancia, Sustancias), nivelFalopez(Sustancia, Valor)), Valores),
+  sum_list(Valores, Nivel).
 
 
 % Punto 6
 medicoConProblemas(Medico):-
-  atiende(Medico, _),
+  medico(Medico),
   findall(Jugador, (atiende(Medico, Jugador), jugadorConflictivo(Jugador)), Jugadores),
   length(Jugadores, Cantidad),
   Cantidad >= 3.
