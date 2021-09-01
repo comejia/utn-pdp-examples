@@ -59,10 +59,10 @@ leGusta(mati, waldorf).
 leGusta(flor, mixta).
 
 % Punto 1a
-leGusta(ezequiel, Gusta):-leGusta(mati, Gusta).
-leGusta(ezequiel, Gusta):-leGusta(fer, Gusta).
+leGusta(ezequiel, Comida):-leGusta(mati, Comida).
+leGusta(ezequiel, Comida):-leGusta(fer, Comida).
 % Punto 1b
-leGusta(marina, Gusta):-leGusta(flor, Gusta).
+leGusta(marina, Comida):-leGusta(flor, Comida).
 leGusta(marina, mondiola).
 % Punto 1c
 % No se modela ya que por el Principio del Universo Cerrado, todo lo que no esta
@@ -71,17 +71,18 @@ leGusta(marina, mondiola).
 
 % Punto 2
 asadoViolento(FechaAsado):-
-  asistio(FechaAsado, UnaPersona),
-  asistio(FechaAsado, OtraPersona),
-  noSeBanca(UnaPersona, OtraPersona).
+  asistio(FechaAsado, _),
+  forall(asistio(FechaAsado, UnaPersona), (noSeBanca(UnaPersona, OtraPersona), asistio(FechaAsado, OtraPersona))).
 
 
 % Punto 3
-calorias(Comida, Calorias):-comida(achura(Comida, Calorias)).
+calorias(Comida, Calorias):-
+  comida(achura(Comida, Calorias)).
 calorias(Comida, Calorias):-
   comida(ensalada(Comida, Ingredientes)),
   length(Ingredientes, Calorias).
-calorias(Comida, 200):-comida(morfi(Comida)).
+calorias(Comida, 200):-
+  comida(morfi(Comida)).
 
 
 % Punto 4
@@ -124,20 +125,27 @@ disfruto(Persona, FechaAsado):-
 
 
 % Punto 7
-comidaRica(Comida):-comida(Comida),Comida = morfi(_).
-comidaRica(Comida):-comida(Comida), Comida = ensalada(_, Ingredientes), length(Ingredientes, Cantidad), Cantidad > 3.
-comidaRica(Comida):-comida(Comida), Comida = achura(chori, _).
-comidaRica(Comida):-comida(Comida), Comida = achura(morci, _).
-
 asadoRico(ComidasPosibles):-
-  findall(Comida, comidaRica(Comida), ComidasRicas),
-  asadosPosibles(ComidasRicas, ComidasPosibles).
+  findall(Comida, esRica(Comida), ComidasRicas),
+  asadosPosibles(ComidasRicas, ComidasPosibles),
+  not(asadoVacio(ComidasPosibles)).
 
-asadosPosibles([ComidaRica], [ComidaPosible]):-comidaRica(ComidaRica), comidaRica(ComidaPosible).
+asadoVacio([]).
+
+asadosPosibles([], []).
 asadosPosibles([ComidaRica|Ricas], [ComidaRica|Posibles]):-
   asadosPosibles(Ricas, Posibles).
 asadosPosibles([_|Ricas], Posibles):-
   asadosPosibles(Ricas, Posibles).
+
+esRica(Comida):-
+  comida(Comida),
+  comidaRica(Comida).
+
+comidaRica(morfi(_)).
+comidaRica(ensalada(_, Ingredientes)):-length(Ingredientes, Cantidad), Cantidad > 3.
+comidaRica(achura(chori, _)).
+comidaRica(achura(morci, _)).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
