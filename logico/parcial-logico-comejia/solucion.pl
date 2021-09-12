@@ -1,6 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parcial: NotiLogic
 % NOMBRE: Cesar Mejia (comejia)
+% Nota: Para ver la resolucion correcta de este parcial, 
+%		ver "parcial2021_resuelto.pl"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Punto 1
