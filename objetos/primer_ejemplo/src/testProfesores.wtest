@@ -1,0 +1,24 @@
+import profes.*
+
+describe "Test de nico" {
+
+	test "costo por dar clase depende de la materia" {
+		assert.equals(400, nico.cuantoCobra("historia"))
+	}
+	
+	test "alumno que le cae bien" {
+		assert.that(nico.leCaeBien(lucas))
+	}
+}
+
+describe "Test de camila" {
+
+	test "costo de clase con camila de buen humor" {
+		assert.equals(250, camila.cuantoCobra("historia"))
+	}
+	test "costo de clase con camila de mal humor" {
+		camila.encularse()
+		assert.equals(750, camila.cuantoCobra("historia"))
+	}
+
+}

@@ -21,11 +21,11 @@ object camila {
 	var gradoAlegria = 7
 	
 	method encularse() {
-		gradoAlegria = gradoAlegria + 1
+		gradoAlegria = gradoAlegria - 1
 	}
 	
 	method alegrarse() {
-		gradoAlegria = gradoAlegria - 1
+		gradoAlegria = gradoAlegria + 1
 	}
 	
 	method estaDeBuenHumor() = gradoAlegria >= 7
