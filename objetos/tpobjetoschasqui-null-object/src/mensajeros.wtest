@@ -1,0 +1,63 @@
+import mensajeria.*
+
+describe "Tests de Chasqui" {
+	test "No puede enviar mensajes largos" {
+		assert.notThat(chasqui.enviarMensaje("12345678901234567890123456789012345678901234567890"))
+	}
+	test "Puede enviar mensajes cortos" {
+		assert.that(chasqui.enviarMensaje("1234567890123456789012345678901234567890123456789"))
+	}
+	test "Costo de un mensaje" {
+		assert.equals(24, chasqui.costoMensaje("123456789012"))
+	}
+}
+describe "Tests de Sherpa" {
+	test "No puede enviar mensajes de longitud impar" {
+		assert.notThat(sherpa.enviarMensaje("123456789"))
+	}
+	test "Puede enviar mensajes de longitud par" {
+		assert.that(sherpa.enviarMensaje("1234567890"))
+	}
+	test "Costo de un mensaje" {
+		assert.equals(60, sherpa.costoMensaje("1234567890"))
+	}
+}
+
+describe "Tests de Messich" {
+	test "No puede enviar mensajes que empiezan con 'a'" {
+		assert.notThat(messich.enviarMensaje("abracadabra"))
+	}
+	test "Puede enviar mensajes que no empiezan con 'a'" {
+		assert.that(messich.enviarMensaje("pata de cabra"))
+	}
+	test "Costo de un mensaje" {
+		assert.equals(30, messich.costoMensaje("pata de cabra"))
+	}
+}
+
+describe "Tests de Pali" {
+	test "No puede enviar mensajes que no son palindromos" {
+		assert.notThat(pali.enviarMensaje("abracadabra"))
+	}
+	test "Puede enviar mensajes que son palindromos" {
+		assert.that(pali.enviarMensaje("Anita lava la tina"))
+	}
+	test "Costo de un mensaje corto" {
+		assert.equals(72, pali.costoMensaje("Anita lava la tina"))
+	}
+	test "Costo de un mensaje largo" {
+		assert.equals(80, pali.costoMensaje("Allí va Ramón y no maravilla"))
+	}
+}
+
+describe "Tests Agencia de mensajeria" {
+	test "Mensaje que solo puede enviar Messich" {
+		assert.equals(messich, agencia.quienPuedeEnviarMensaje("nomelacont"))
+	}
+	test "Mensaje que solo puede enviar Chasqui" {
+		assert.equals(chasqui, agencia.quienPuedeEnviarMensaje("hola chau hola chau hola chau hola chau hola chau"))
+	}
+	test "Mensaje que solo puede enviar Sherpa" {
+		assert.equals(sherpa, agencia.quienPuedeEnviarMensaje("al cortar los tomates en juliana, luego hay que sofreirlos con ajo y morrón verde o rojo si no se tiene a mano"))
+	}
+}
