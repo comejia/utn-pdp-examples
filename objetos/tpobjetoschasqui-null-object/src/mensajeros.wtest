@@ -1,22 +1,33 @@
+import mensajeras.*
 import mensajeria.*
+
+object mensajerosFactory {
+	const enviosRapidos = new Sector(costoSector = 20)
+	const enviosEstandares = new Sector(costoSector = 15)
+	const enviosVIP = new Sector(costoSector = 30)
+	method mensajeroRapido() = new MensajeroEstandar(sector = enviosRapidos)
+	method mensajeroEstandar() = new MensajeroEstandar(sector = enviosEstandares)
+	method mensajeroVIP() = new MensajeroEstandar(sector = enviosVIP)
+}
 
 describe "Tests de Chasqui" {
 	test "No puede enviar mensajes largos" {
-		assert.notThat(chasqui.enviarMensaje("12345678901234567890123456789012345678901234567890"))
+		assert.notThat(chasqui.puedeEnviarMensaje("12345678901234567890123456789012345678901234567890"))
 	}
 	test "Puede enviar mensajes cortos" {
-		assert.that(chasqui.enviarMensaje("1234567890123456789012345678901234567890123456789"))
+		assert.that(chasqui.puedeEnviarMensaje("1234567890123456789012345678901234567890123456789"))
 	}
 	test "Costo de un mensaje" {
 		assert.equals(24, chasqui.costoMensaje("123456789012"))
 	}
 }
+
 describe "Tests de Sherpa" {
 	test "No puede enviar mensajes de longitud impar" {
-		assert.notThat(sherpa.enviarMensaje("123456789"))
+		assert.notThat(sherpa.puedeEnviarMensaje("123456789"))
 	}
 	test "Puede enviar mensajes de longitud par" {
-		assert.that(sherpa.enviarMensaje("1234567890"))
+		assert.that(sherpa.puedeEnviarMensaje("1234567890"))
 	}
 	test "Costo de un mensaje" {
 		assert.equals(60, sherpa.costoMensaje("1234567890"))
@@ -25,10 +36,10 @@ describe "Tests de Sherpa" {
 
 describe "Tests de Messich" {
 	test "No puede enviar mensajes que empiezan con 'a'" {
-		assert.notThat(messich.enviarMensaje("abracadabra"))
+		assert.notThat(messich.puedeEnviarMensaje("abracadabra"))
 	}
 	test "Puede enviar mensajes que no empiezan con 'a'" {
-		assert.that(messich.enviarMensaje("pata de cabra"))
+		assert.that(messich.puedeEnviarMensaje("pata de cabra"))
 	}
 	test "Costo de un mensaje" {
 		assert.equals(30, messich.costoMensaje("pata de cabra"))
@@ -37,10 +48,10 @@ describe "Tests de Messich" {
 
 describe "Tests de Pali" {
 	test "No puede enviar mensajes que no son palindromos" {
-		assert.notThat(pali.enviarMensaje("abracadabra"))
+		assert.notThat(pali.puedeEnviarMensaje("abracadabra"))
 	}
 	test "Puede enviar mensajes que son palindromos" {
-		assert.that(pali.enviarMensaje("Anita lava la tina"))
+		assert.that(pali.puedeEnviarMensaje("Anita lava la tina"))
 	}
 	test "Costo de un mensaje corto" {
 		assert.equals(72, pali.costoMensaje("Anita lava la tina"))
@@ -50,7 +61,55 @@ describe "Tests de Pali" {
 	}
 }
 
+describe "Tests de Pichca" {
+	test "No puede enviar mensajes que tenga menos de una cantidad de palabras" {
+		assert.notThat(pichca.puedeEnviarMensaje("Hola soy pichca"))
+	}
+	test "Puede enviar mensajes que tenga mas de una cantidad de palabras" {
+		assert.that(pichca.puedeEnviarMensaje("Hola Soy pichca pichca"))
+	}
+	test "Costo de un mensaje" {
+		const randomTest = object {
+			method numeroAleatorio() = 5
+		}
+		pichca.costoBaseDeMensaje(randomTest)
+
+		assert.equals(50, pichca.costoMensaje("Soy pichca"))
+	}
+}
+
+describe "Tests de mensajero estandar" {
+	test "No puede enviar mensajes que tenga menos de cierta longitud" {
+		assert.notThat(mensajerosFactory.mensajeroEstandar().puedeEnviarMensaje("abcdefghijklmnopqrs"))
+	}
+	test "Puede enviar mensajes que tenga mas de cierta longitud" {
+		assert.that(mensajerosFactory.mensajeroEstandar().puedeEnviarMensaje("abcdefghijklmnopqrst"))
+	}
+	test "Costo de un mensaje para una mensajero en envios rapidos" {
+		assert.equals(60, mensajerosFactory.mensajeroRapido().costoMensaje("Soy mensajero comun"))
+	}
+	test "Costo de un mensaje para una mensajero en envios estandar" {
+		assert.equals(45, mensajerosFactory.mensajeroEstandar().costoMensaje("Soy mensajero comun"))
+	}
+	test "Costo de un mensaje para una mensajero en envios VIP" {
+		assert.equals(90, mensajerosFactory.mensajeroVIP().costoMensaje("Soy mensajero comun"))
+	}
+}
+
 describe "Tests Agencia de mensajeria" {
+	method recibirVariosMensajes() {
+		agencia.recibirMensaje("nomelacont")
+		agencia.recibirMensaje("hola chau hola chau hola chau hola chau hola chau")
+		agencia.recibirMensaje("al cortar los tomates en juliana, luego hay que sofreirlos con ajo y morrón verde o rojo si no se tiene a mano")
+		agencia.recibirMensaje("nomelacont")
+	}
+	method asignarCalendario(cantidadMesesExtra) {
+		const calendarioTest = object {
+			method fechaDeHoy() = new Date().plusMonths(cantidadMesesExtra)
+		}
+		agencia.calendario(calendarioTest)
+	}
+
 	test "Mensaje que solo puede enviar Messich" {
 		assert.equals(messich, agencia.quienPuedeEnviarMensaje("nomelacont"))
 	}
@@ -59,5 +118,25 @@ describe "Tests Agencia de mensajeria" {
 	}
 	test "Mensaje que solo puede enviar Sherpa" {
 		assert.equals(sherpa, agencia.quienPuedeEnviarMensaje("al cortar los tomates en juliana, luego hay que sofreirlos con ajo y morrón verde o rojo si no se tiene a mano"))
+	}
+
+	test "Al recibir un mensaje vacio se muestra un error" {
+		assert.throwsExceptionLike(new UserException(message = "El mensaje no puede estar vacio"), { agencia.recibirMensaje("") })
+	}
+	test "Al recibir un mensaje que no puede enviar nadie se muestra un error" {
+		assert.throwsExceptionLike(new UserException(message = "No hay mensajero que pueda enviar el mensaje"), { agencia.recibirMensaje("a12345678901234567890123456789012345678901234567890") })
+	}
+	test "Ganancia neta del mes" {
+		self.recibirVariosMensajes()
+		assert.equals(2622, agencia.gananciaNetaDelMes())
+	}
+	test "No hay ganancia del mes si no se recibio mensajes en ese tiempo" {
+		self.recibirVariosMensajes()
+		self.asignarCalendario(1)
+		assert.equals(0, agencia.gananciaNetaDelMes())
+	}
+	test "Empleado del mes" {
+		self.recibirVariosMensajes()
+		assert.equals(messich, agencia.chasquiQuilla())
 	}
 }

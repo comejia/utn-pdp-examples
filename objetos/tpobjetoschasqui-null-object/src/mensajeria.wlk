@@ -1,65 +1,59 @@
-object chasqui {
-	const longitudMaximaParaEnviarMensaje = 50
-	
-	method enviarMensaje(mensaje) = mensaje.length() < longitudMaximaParaEnviarMensaje
+import mensajeras.*
 
-	method costoMensaje(mensaje) = mensaje.length() * 2
+class UserException inherits Exception {}
 
+object calendarioActual {
+	method fechaDeHoy() = new Date()
 }
-
-object sherpa {
-	var costoPorMensaje = 60
-
-	method enviarMensaje(mensaje) = self.tieneLongitudPar(mensaje)
-	
-	method tieneLongitudPar(mensaje) = (mensaje.length() % 2) == 0
-
-	method costoMensaje(mensaje) = costoPorMensaje
-
-	method cambiarCosto(nuevoCosto) {
-		costoPorMensaje = nuevoCosto
-	}
-
-}
-
-object messich {
-	var costoBaseDeMensaje = 10
-
-	method enviarMensaje(mensaje) = !mensaje.startsWith("a")
-
-	method costoMensaje(mensaje) = mensaje.words().size() * costoBaseDeMensaje
-
-	method cambiarCosto(nuevoCosto) {
-		costoBaseDeMensaje = nuevoCosto
-	}
-
-}
-
-object pali {
-	const costoBaseDeMensaje = 4
-	const costoMaximoPorMensaje = 80
-
-	method esPalindromo(mensaje) {
-		const mensajeSinEspacios = mensaje.replace(" ", "")
-		return mensajeSinEspacios.equalsIgnoreCase(mensajeSinEspacios.reverse())
-	}
-
-	method enviarMensaje(mensaje) = self.esPalindromo(mensaje)
-
-	method costoMensaje(mensaje) = (mensaje.length() * costoBaseDeMensaje).min(costoMaximoPorMensaje)
-
-}
-
 
 object agencia {
 	const mensajeros = [chasqui, sherpa, messich, pali]
+	const historial = []
+	var property calendario = calendarioActual
 
-	method quienPuedeEnviarMensaje(mensaje) {
-		const mensajerosQuePuedenEnviarMensaje = mensajeros.filter({ mensajero => mensajero.enviarMensaje(mensaje) })
-		return mensajerosQuePuedenEnviarMensaje.fold(mensajerosQuePuedenEnviarMensaje.first(), 
-			{ unMensajero, otroMensajero => if(unMensajero.costoMensaje(mensaje) < otroMensajero.costoMensaje(mensaje)) unMensajero else otroMensajero }
-		)
+	method mensajerosQuePuedenEnviar(mensaje) = mensajeros.filter({ mensajero => mensajero.puedeEnviarMensaje(mensaje) })
+
+	method quienPuedeEnviarMensaje(mensaje) = self.mensajerosQuePuedenEnviar(mensaje) 
+			.min({ mensajero => mensajero.costoMensaje(mensaje) })
+
+	method recibirMensaje(mensaje) {
+		if (mensaje.isEmpty()) {
+			 throw new UserException(message = "El mensaje no puede estar vacio")
+		}
+
+		if (self.mensajerosQuePuedenEnviar(mensaje).isEmpty()) {
+			throw new UserException(message = "No hay mensajero que pueda enviar el mensaje")
+		}
+
+		const mensajeroElegido = self.quienPuedeEnviarMensaje(mensaje)
+
+		self.agregarAlHistorial(new Envio(fechaDeEnvio = calendario.fechaDeHoy(), mensaje = mensaje, mensajero = mensajeroElegido))
 	}
+
+	method agregarAlHistorial(envio) {
+		historial.add(envio)
+	}
+
+	method gananciaNetaDelMes() =
+		self.historialDelUltimoMes().sum({ envio => self.costoMensaje(envio.mensaje()) - envio.costoEnvio() })
+
+	method historialDelUltimoMes() = historial.filter({ envio => self.esDelUltimoMes(envio) })
+
+	method costoMensaje(mensaje) = if (mensaje.length() < 30) 500 else 900
+
+	method esDelUltimoMes(envio) = (calendario.fechaDeHoy() - envio.fechaDeEnvio()) <= 30
+
+	method chasquiQuilla() =
+		self.empleadosDelUltimoMes().asSet().max({ empleado => self.empleadosDelUltimoMes().occurrencesOf(empleado) })
+
+	method empleadosDelUltimoMes() = self.historialDelUltimoMes().map({ envio => envio.mensajero() })
 
 }
 
+class Envio {
+	var property fechaDeEnvio
+	var property mensaje
+	var property mensajero
+
+	method costoEnvio() = mensajero.costoMensaje(mensaje)
+}
