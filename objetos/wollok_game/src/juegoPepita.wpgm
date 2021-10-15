@@ -1,0 +1,19 @@
+import wollok.game.*
+import pepita.*
+import juegoPepita.*
+
+program juegoPepita {
+	game.title("Pepita")
+	game.height(10)
+	game.width(10)
+	game.boardGround("fondo2.jpg")
+	
+	pepitaUI.configurarPersonajes()
+	pepitaUI.configurarAccionesTeclado()
+	pepitaUI.configurarEventos()
+
+	const sonidoInicial = game.sound("pepita-start.mp3")
+	game.schedule(100, { sonidoInicial.play() })
+
+	game.start()
+}
