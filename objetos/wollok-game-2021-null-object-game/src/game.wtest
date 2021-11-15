@@ -1,0 +1,10 @@
+import wollok.game.*
+
+describe "Tests de Monstruos" {
+
+	test "testX" {
+
+		assert.that(true)
+
+	}
+}
