@@ -1,0 +1,44 @@
+import espacios_urbanos.*
+
+object espaciosFactory {
+	
+	method espacioChico() = new Plaza(superficie = 10, canchas = 3)
+	
+	method plazaConMuchasCanchas() = new Plaza(canchas = 5)
+	
+	method plazoletaConProcerSMYCierraDeNoche() = new Plazoleta(tieneVallado = true, procer = "San Martin")
+	
+	method anfiteatroConMuchaCapacidad() = new Anfiteatro(capacidad = 1000)
+	
+	method multiConEspacioGrandes() = new Multiespacio(espaciosUrbanos = [
+		self.plazaConMuchasCanchas(),
+		self.anfiteatroConMuchaCapacidad()
+	])
+	method multiConAlgunosEspacioGrandes() = new Multiespacio(espaciosUrbanos = [
+		self.plazaConMuchasCanchas(),
+		self.anfiteatroConMuchaCapacidad(),
+		new Plaza(canchas = 1)
+	])
+}
+
+describe "Tests de espacios grandes" {
+
+	test "Un espacio de superficie chica, no es grande" {
+		assert.notThat(espaciosFactory.espacioChico().esGrande())
+	}
+	test "Una plaza grande con muchas chanchas, es grande" {
+		assert.that(espaciosFactory.plazaConMuchasCanchas().esGrande())
+	}
+	test "Una plazoleta grande que homenajea a San Martin y cierra de noche, es grande" {
+		assert.that(espaciosFactory.plazoletaConProcerSMYCierraDeNoche().esGrande())
+	}
+	test "Un anfiteatro grande con mucha capacidad, es grande" {
+		assert.that(espaciosFactory.anfiteatroConMuchaCapacidad().esGrande())
+	}
+	test "Un multiespacio conformado por espacios grandes, es grande" {
+		assert.that(espaciosFactory.multiConEspacioGrandes().esGrande())
+	}
+	test "Un multiespacio conformado por algunos espacios grandes, no es grande" {
+		assert.notThat(espaciosFactory.multiConAlgunosEspacioGrandes().esGrande())
+	}
+}

@@ -1,0 +1,144 @@
+import amigos.*
+import criterios.*
+import comidas.*
+
+object criteriosDePasarFactory {
+	method elSordo() {
+		osky.elementosCerca(["vinagre", "aceto"])
+		osky.criterioDePasar(pasarElPrimero)
+		return osky
+	}
+	method elPasaTodo() {
+		moni.elementosCerca(["aceite", "limon"])
+		moni.criterioDePasar(pasarTodo)
+		return moni
+	}
+	method elCambiador() {
+		facu.elementosCerca(["sal"])
+		facu.criterioDePasar(cambiarLugar)
+		return facu
+	}
+	method elAmable() {
+		vero.elementosCerca(["cuchillo", "tenedor"])
+		vero.criterioDePasar(pasarElemento)
+		return vero
+	}
+}
+
+object criteriosDeComidaFactory {
+	method elVegetariano() {
+		osky.criterioDeComida(vegetariano)
+		return osky
+	}
+	method elDietetico() {
+		osky.criterioDeComida(dietetico)
+		return osky
+	}
+	method elAlternado() {
+		osky.criterioDeComida(new Alternado())
+		return osky
+	}
+	method elCombinacion() {
+		osky.criterioDeComida(new Combinacion(criteriosDeAceptacion = [dietetico, vegetariano]))
+		return osky
+	}
+}
+
+object comensalesFactory {
+	method noComio() {
+		osky.comidas([])
+		return osky
+	}
+}
+
+describe "Tests de pasar algo" {
+
+	test "Cuando se le pide algo al 'sordo', la persona obtiene el primer elemento del 'sordo'" {
+		const alguien = criteriosDePasarFactory.elPasaTodo()
+		criteriosDePasarFactory.elSordo().mePasas("aceto", alguien)
+
+		assert.that(alguien.tieneElemento("vinagre"))
+	}
+	test "Cuando se le pide algo al 'pasaTodo', la persona obtiene todos los elementos del 'pasaTodo'" {
+		const alguien = criteriosDePasarFactory.elSordo()
+		criteriosDePasarFactory.elPasaTodo().mePasas("limon", alguien)
+
+		assert.that(alguien.tieneElemento("aceite"))
+		assert.that(alguien.tieneElemento("limon"))
+	}
+	test "Cuando se le pide algo al 'cambiador', la persona cambia de lugar con el 'cambiador'" {
+		const alguien = criteriosDePasarFactory.elSordo()
+		alguien.posicion(3)
+		criteriosDePasarFactory.elCambiador().mePasas("sal", alguien)
+
+		assert.equals(1, alguien.posicion())
+	}
+	test "Cuando se le pide algo al 'amable', la persona tiene el elemento que pidio" {
+		const alguien = criteriosDePasarFactory.elSordo()
+		criteriosDePasarFactory.elAmable().mePasas("tenedor", alguien)
+
+		assert.that(alguien.tieneElemento("tenedor"))
+	}
+
+}
+
+describe "Tests de comer" {
+	test "Una persona con criterio vegetariano, come lo que no sea carne" {
+		assert.that(criteriosDeComidaFactory.elVegetariano().puedeComer(ensalada))
+	}
+	test "Una persona con criterio dietetico, insume comidas con calorias menor a un maximo" {
+		assert.that(criteriosDeComidaFactory.elDietetico().puedeComer(pechitoDeCerdo))
+	}
+
+	test "Una persona con criterio alternado, acepta y rechaza la comida" {
+		osky.criterioDeComida(new Alternado())
+		assert.that(osky.puedeComer(pechitoDeCerdo))
+		assert.notThat(osky.puedeComer(pechitoDeCerdo))
+	}
+	test "Una persona con criterio combinacion, come si la comida cumple ciertas criterios" {
+		assert.that(criteriosDeComidaFactory.elCombinacion().puedeComer(ensalada))
+	}
+
+}
+
+describe "Tests de pipon" {
+	test "Una persona que come cosas pesadas, esta pipon" {
+		const alguien = criteriosDePasarFactory.elSordo()
+		alguien.criterioDeComida(new Alternado())
+		alguien.comer(albondigas)
+		assert.that(alguien.estaPipon())
+	}
+	test "Una persona que come liviano, no esta pipon" {
+		const alguien = criteriosDePasarFactory.elSordo()
+		alguien.comer(pechitoDeCerdo)
+		alguien.comer(ensalada)
+		assert.notThat(alguien.estaPipon())
+	}
+
+}
+
+describe "Tests de la pasa bien" {
+	test "Una persona que no comio nada, no la pasa bien" {
+		assert.notThat(comensalesFactory.noComio().laEstaPasandoBien())
+	}
+	test "Osky la pasa bien siempre que come algo" {
+		osky.comer(ensalada)
+		assert.that(osky.laEstaPasandoBien())
+	}
+	test "Moni la pasa bien si come algo y esta en la posicion 1" {
+		moni.comer(ensalada)
+		moni.posicion(1)
+		assert.that(moni.laEstaPasandoBien())
+	}
+	test "Facu la pasa bien si come algo con carne" {
+		facu.criterioDeComida(new Alternado())
+		facu.comer(albondigas)
+		assert.that(facu.laEstaPasandoBien())
+	}
+	test "Vero la pasa bien si come y tiene menos de 3 elementos cerca" {
+		vero.comer(ensalada)
+		vero.elementosCerca(["sal", "cuchara"])
+		assert.that(vero.laEstaPasandoBien())
+	}
+}
+
